@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import Categoria, Cliente, Endereco, FormaPagamento, Item, ItemPedido, Pedido, Vendedor
-from .serializers import CategoriaSerializer, ClienteSerializer, EnderecoSerializer, FormaPagamentoSerializer, ItemPedidoSerializer, ItemSerializer, PedidoSerializer, VendedorSerializer
+from .models import  Cliente, Endereco, FormaPagamento, Item, ItemPedido, Pedido, Vendedor
+from .serializers import  ClienteSerializer, EnderecoSerializer, FormaPagamentoSerializer, ItemPedidoSerializer, ItemSerializer, PedidoSerializer, VendedorSerializer
 
 class ClienteViewSet(viewsets.ModelViewSet):
     """
@@ -33,15 +33,9 @@ class VendedorViewSet(viewsets.ModelViewSet):
     filterset_fields = ['nome']
     search_fields = ['nome']
     ordering_fields = ['nome']
-class CategoriaViewSet(viewsets.ModelViewSet):
-    queryset = Categoria.objects.all()
-    serializer_class = CategoriaSerializer   
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['nome']
-    search_fields = ['nome']
-    ordering_fields = ['nome']  
+  
 class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.all()
+    queryset = Item.objects.filter(disponivel=True)
     serializer_class = ItemSerializer   
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['nome', 'preco']

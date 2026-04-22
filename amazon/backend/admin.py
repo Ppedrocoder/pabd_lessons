@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Categoria, Cliente, Endereco, FormaPagamento, Item, ItemPedido, Pedido, Vendedor
+from .models import Cliente, Endereco, FormaPagamento, Item, ItemPedido, Pedido, Vendedor
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('nome', 'email', 'telefone', 'data_cadastro')
@@ -12,17 +12,13 @@ class EnderecoAdmin(admin.ModelAdmin):
     ordering = ('cidade',)
 @admin.register(Vendedor)
 class VendedorAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'endereco_id', 'telefone')
-    search_fields = ('nome',)
-    ordering = ('nome',)
-@admin.register(Categoria)
-class CategoriaAdmin(admin.ModelAdmin):
-    list_display = ('nome',)
-    search_fields = ('nome',)
-    ordering = ('nome',)
+    list_display = ('nome', 'email', 'cpf_cnpj', 'telefone', 'avaliacao', 'ativo', 'data_cadastro')
+    search_fields = ('nome', 'email', 'cpf_cnpj')
+    ordering = ('nome', 'data_cadastro')
+
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'preco', 'qtd_estoque')
+    list_display = ('nome', 'preco', 'estoque', 'categoria', 'disponivel', 'criado_em', 'atualizado_em')
     search_fields = ('nome',)
     ordering = ('nome',)
 @admin.register(FormaPagamento)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Categoria, Cliente, Endereco, FormaPagamento, Item, ItemPedido, Pedido, Vendedor
+from .models import Cliente, Endereco, FormaPagamento, Item, ItemPedido, Pedido, Vendedor
 class ClienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cliente
@@ -16,11 +16,10 @@ class EnderecoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Endereco
         fields = '__all__' 
-class CategoriaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Categoria
-        fields = '__all__' 
+
 class ItemSerializer(serializers.ModelSerializer):
+    categoria_display = serializers.CharField(source='get_categoria_display',read_only=True)
+
     class Meta:
         model = Item
         fields = '__all__'

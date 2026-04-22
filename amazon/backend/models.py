@@ -28,41 +28,42 @@ class Endereco(models.Model):
       # Retorna a representação legível do objeto
       return f'{self.rua}, {self.cidade} - {self.estado}, CEP: {self.cep}'
 class Vendedor(models.Model):
-    nome = models.CharField(max_length=100, null=False)
-    endereco_id = models.ForeignKey(Endereco, on_delete=models.CASCADE, null=False)
+    nome = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    cpf_cnpj = models.CharField(max_length=18, unique=True, default=None)
     telefone = models.CharField(max_length=20, blank=True)
+    avaliacao = models.DecimalField(max_digits=3,decimal_places=2,default=5.00 )
+    ativo = models.BooleanField(default=True)
+    data_cadastro = models.DateTimeField(auto_now_add=True)
     class Meta:
-      db_table = 'vendedores' # Nome explícito da tabela no banco
-      ordering = ['nome'] # Ordenação padrão nas consultas
-
+        db_table = 'vendedores'
+        ordering = ['nome']
     def __str__(self):
-      # Retorna a representação legível do objeto
-      return f'{self.nome} <{self.email}>'
+        return f'{self.nome} ({self.cpf_cnpj})'
 
-class Categoria(models.Model):
-    nome = models.CharField(max_length=100, null=False)
-    class Meta:
-      db_table = 'categorias' # Nome explícito da tabela no banco
-      ordering = ['nome'] # Ordenação padrão nas consultas
-
-    def __str__(self):
-      # Retorna a representação legível do objeto
-      return f'{self.nome}'
 
 class Item(models.Model):
-    vendedor_id = models.ForeignKey(Vendedor, on_delete=models.CASCADE, null=False)
-    nome = models.CharField(max_length=100, null=False)
-    preco = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    CATEGORIA_CHOICES = [
+        ('eletronicos', 'Eletrônicos'),
+        ('roupas', 'Roupas e Acessórios'),
+        ('livros', 'Livros'),
+        ('alimentos', 'Alimentos'),
+        ('outros', 'Outros'),
+    ]
+    nome = models.CharField(max_length=200)
     descricao = models.TextField(blank=True)
-    categoria_id = models.ForeignKey(Categoria, on_delete=models.CASCADE, null=False)
-    qtd_estoque = models.IntegerField(default=0)
+    preco = models.DecimalField(max_digits=10, decimal_places=2)
+    estoque = models.IntegerField(default=0)
+    categoria = models.CharField(max_length=20,choices=CATEGORIA_CHOICES,default='outros')
+    disponivel = models.BooleanField(default=True)
+    criado_em = models.DateTimeField(auto_now_add=True) # Preenchido automaticamente na criação
+    atualizado_em = models.DateTimeField(auto_now=True) # Atualizado a cada save()
     class Meta:
-      db_table = 'itens' # Nome explícito da tabela no banco
-      ordering = ['nome'] # Ordenação padrão nas consultas
-
+        db_table = 'produtos'
+        ordering = ['nome']
     def __str__(self):
-      # Retorna a representação legível do objeto
-      return f'{self.nome} <{self.preco}> - {self.categoria_id.nome} - Vendedor: {self.vendedor_id.nome} - Estoque: {self.qtd_estoque} unidades'
+        return f'{self.nome} — R$ {self.preco}'
+
 class FormaPagamento(models.Model):
     tipo = models.CharField(max_length=50, null=False)
     class Meta:
