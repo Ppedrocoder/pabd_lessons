@@ -40,7 +40,23 @@ class Vendedor(models.Model):
         ordering = ['nome']
     def __str__(self):
         return f'{self.nome} ({self.cpf_cnpj})'
-
+class PerfilVendedor(models.Model):
+    vendedor = models.OneToOneField(
+      Vendedor,
+      on_delete=models.CASCADE,
+      related_name='perfil',
+      primary_key=True # usa o id do vendedor como PK
+    )
+    razao_social = models.CharField(max_length=150, blank=True)
+    inscricao_estadual = models.CharField(max_length=20, blank=True)
+    banco = models.CharField(max_length=50, blank=True)
+    agencia = models.CharField(max_length=10, blank=True)
+    conta = models.CharField(max_length=20, blank=True)
+    chave_pix = models.CharField(max_length=100, blank=True)
+    class Meta:
+        db_table = 'perfis_vendedores'
+    def __str__(self):
+        return f'Perfil de {self.vendedor.nome}'
 
 class Item(models.Model):
     CATEGORIA_CHOICES = [
@@ -76,31 +92,56 @@ class FormaPagamento(models.Model):
 
 
 class Pedido(models.Model):
-    cliente_id = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=False)
-    endereco_id = models.ForeignKey(Endereco, on_delete=models.CASCADE, null=False)
-    forma_pagamento_id  = models.ForeignKey(FormaPagamento, on_delete=models.CASCADE, null=False)
-    data = models.DateTimeField(auto_now_add=True)
-    valor_total = models.DecimalField(max_digits=10, decimal_places=2, null=False)
-    status = models.CharField(max_length=20, default="Pendente")
+    STATUS_CHOICES = [
+      ('pendente', 'Pendente'),
+      ('pago', 'Pago'),
+      ('enviado', 'Enviado'),
+      ('entregue', 'Entregue'),
+      ('cancelado', 'Cancelado'),
+    ]
+    cliente = models.ForeignKey(
+        Cliente,
+        on_delete=models.PROTECT,
+        related_name='pedidos'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pendente'
+    )
+    data_pedido = models.DateTimeField(auto_now_add=True)
+    observacoes = models.TextField(blank=True)
     class Meta:
-      db_table = 'pedidos' # Nome explícito da tabela no banco
-      ordering = ['data'] # Ordenação padrão nas consultas
-
+        db_table = 'pedidos'
+        ordering = ['-data_pedido']
     def __str__(self):
-      # Retorna a representação legível do objeto
-      return f'Pedido {self.id} - Cliente: {self.cliente_id.nome} - Valor: {self.valor_total} - Status: {self.status} - Data: {self.data.strftime("%Y-%m-%d %H:%M:%S")} - Forma de Pagamento: {self.forma_pagamento_id.tipo} - Entrega: {self.endereco_id.rua}, {self.endereco_id.cidade} - {self.endereco_id.estado}'
+        return f'Pedido #{self.id} — {self.cliente.nome}' 
     
 
 class ItemPedido(models.Model):
-    pedido_id = models.ForeignKey(Pedido, on_delete=models.CASCADE, null=False) 
-    item_id = models.ForeignKey(Item, on_delete=models.CASCADE, null=False)
-    quantidade = models.IntegerField(null=False)
+    pedido = models.ForeignKey(
+        Pedido,
+        on_delete=models.CASCADE, # itens não existem sem o pedido
+        related_name='itens'
+    )
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.PROTECT, # produto com vendas não pode ser apagado
+        related_name='itens_vendidos'
+    )
+    quantidade = models.PositiveIntegerField(default=1)
+    preco_unitario = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text='Preço congelado no momento da compra'
+    )
     class Meta:
-      db_table = 'itens_pedido' # Nome explícito da tabela no banco
-      ordering = ['pedido_id'] # Ordenação padrão nas consultas
-
+        db_table = 'itens_pedido'
+        unique_together = ['pedido', 'produto'] # mesmo produto não duplica no pedido
     def __str__(self):
-      # Retorna a representação legível do objeto
-      return f'Item do Pedido {self.pedido_id.id} - Item: {self.item_id.nome} - Quantidade: {self.quantidade}'
+        return f'{self.quantidade}x {self.produto.nome}'
+    @property
+    def subtotal(self):
+        return self.quantidade * self.preco_unitario
 
 
