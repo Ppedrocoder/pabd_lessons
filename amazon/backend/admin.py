@@ -8,7 +8,7 @@ class ClienteAdmin(admin.ModelAdmin):
 @admin.register(Endereco)
 class EnderecoAdmin(admin.ModelAdmin):
     list_display = ('cliente_id', 'rua', 'cidade', 'estado', 'cep')
-    search_fields = ('rua', 'cidade', 'estado')
+    search_fields = ('rua', 'cidade', 'estado', 'cliente_id__nome')
     ordering = ('cidade',)
 @admin.register(Vendedor)
 class VendedorAdmin(admin.ModelAdmin):
@@ -28,11 +28,11 @@ class FormaPagamentoAdmin(admin.ModelAdmin):
     ordering = ('tipo',)
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('cliente_id', 'endereco_id', 'forma_pagamento_id', 'data', 'valor_total', 'status')
+    list_display = ('cliente', 'status', 'data_pedido', 'observacoes')
     search_fields = ('status',)
-    ordering = ('data',)
+    ordering = ('-data_pedido',)
 @admin.register(ItemPedido)
 class ItemPedidoAdmin(admin.ModelAdmin):
-    list_display = ('pedido_id', 'item_id', 'quantidade')
-    search_fields = ('pedido_id__cliente_id__nome', 'item_id__nome')
+    list_display = ('pedido', 'produto', 'quantidade', 'preco_unitario', 'subtotal')
+    search_fields = ('pedido__cliente__nome', 'produto__nome')
     ordering = ('pedido_id',)

@@ -125,7 +125,7 @@ class ItemPedido(models.Model):
         related_name='itens'
     )
     produto = models.ForeignKey(
-        Produto,
+        Item,
         on_delete=models.PROTECT, # produto com vendas não pode ser apagado
         related_name='itens_vendidos'
     )
