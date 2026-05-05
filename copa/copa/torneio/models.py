@@ -20,3 +20,16 @@ class Selecao(models.Model):
     grupo = models.ForeignKey(Grupo, on_delete=models.PROTECT, related_name='selecoes')
     tecnico = models.OneToOneField(Tecnico, on_delete=models.SET_NULL, null=True, blank=True, related_name='selecao')
     escudo_url = models.URLField(blank=True, null=True)
+class Jogador(models.Model):
+    nome = models.CharField(max_length=150)
+    nome_guerra = models.CharField(max_length=50)
+    selecao = models.ForeignKey(Selecao, on_delete=models.PROTECT, related_name='jogadores')
+    posicao = models.CharField(max_length=50, choices='Goleiro, Zagueiro, Lateral, Volante, Meia, Atacante'.split(', '))
+    numero_camisa = models.PositiveIntegerField()
+    data_nascimento = models.DateField()
+    suspenso = models.BooleanField(default=False)
+
+class Jogo(models.Model):
+    pass
+class EventoJogo(models.Model):
+    pass
