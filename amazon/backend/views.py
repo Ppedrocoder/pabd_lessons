@@ -1,10 +1,17 @@
+from contextvars import Token
+
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import  Cliente, Endereco, FormaPagamento, Item, ItemPedido, Pedido, Vendedor
-from .serializers import  ClienteSerializer, EnderecoSerializer, FormaPagamentoSerializer, ItemPedidoSerializer, ItemSerializer, PedidoSerializer, VendedorSerializer
+from .models import  Cliente, Endereco, FormaPagamento, Item, ItemPedido, Pedido, Vendedor, Usuario
+from .serializers import  ClienteSerializer, EnderecoSerializer, FormaPagamentoSerializer, ItemPedidoSerializer, ItemSerializer, PedidoSerializer, UsuarioSerializer, VendedorSerializer
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from django.shortcuts import get_object_or_404
+from rest_framework.authtoken.models import Token
 
 class ClienteViewSet(viewsets.ModelViewSet):
     """
@@ -62,3 +69,34 @@ class ItemPedidoViewSet(viewsets.ModelViewSet):
     filterset_fields = ['pedido_id', 'item_id']
     search_fields = ['pedido_id__cliente_id__nome', 'item_id__nome']
     ordering_fields = ['pedido_id', 'item_id']
+
+@api_view(['POST'])
+@permission_classes([AllowAny]) # registro é público
+def signup(request):
+    serializer = UsuarioSerializer(data=request.data)
+    if serializer.is_valid():
+        usuario = serializer.save() # chama o create() do serializer
+        token = Token.objects.create(user=usuario)
+        return Response({'token': token.key, 'usuario': serializer.data},
+    status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny]) # login é público
+def login(request):
+    usuario = get_object_or_404(Usuario, username=request.data.get('username'))
+    if not usuario.check_password(request.data.get('password')):
+        return Response({'detail': 'Credenciais inválidas.'},
+    status=status.HTTP_400_BAD_REQUEST)
+    token, _ = Token.objects.get_or_create(user=usuario)
+    return Response({'token': token.key,
+    'usuario': UsuarioSerializer(usuario).data})
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated]) # exige token válido
+def perfil(request):
+    return Response({
+        'username': request.user.username,
+        'tipo': request.user.tipo,
+        'mensagem': f'Olá, {request.user.username}! Você é {request.user.get_tipo_display()}.'
+    })
