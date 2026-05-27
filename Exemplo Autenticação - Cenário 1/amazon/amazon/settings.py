@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+from django.contrib.auth.views import INTERNAL_RESET_SESSION_TOKEN
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^e_i!5ytc2r7ss65e8!2njq!hf29w2gr#gg&xvct6p(e@=-dic'
+SECRET_KEY = 'django-insecure-pcl#wz5^ji=n*zkkobjmft5@@34#1aia04-82j3+71hgj)5xrh'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,12 +38,27 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # APPs externos
     'rest_framework',
-    'rest_framework.authtoken',
-    'django_filters',
-    'backend',
     'drf_yasg',
-]
+    'rest_framework.authtoken',
+    # APPs do projeto
+    'backend',
+] 
+
+AUTH_USER_MODEL = "backend.Usuario"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+TOKEN_RESET_TIME = 300
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -80,29 +96,14 @@ WSGI_APPLICATION = 'amazon.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'amazon',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': 'amazon', # Nome do banco de dados
+        'USER': 'postgres', # Usuário do PostgreSQL
+        'PASSWORD': 'postgres', # Senha do usuário
+        'HOST': 'localhost', # Endereço do servidor PostgreSQL
+        'PORT': '5432', # Porta do PostgreSQL
     }
 }
 
-AUTH_USER_MODEL = 'backend.Usuario'
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-}
-
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {},
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

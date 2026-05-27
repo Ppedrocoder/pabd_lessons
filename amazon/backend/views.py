@@ -13,6 +13,40 @@ from rest_framework.authentication import TokenAuthentication
 from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.models import Token
 
+class UsuarioViewSet(viewsets.ViewSet):
+    def get_permissions(self):
+        if self.action in ['signup', 'login']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
+        
+    def signup(request):
+        serializer = UsuarioSerializer(data=request.data)
+        if serializer.is_valid():
+            usuario = serializer.save() # chama o create() do serializer
+            token = Token.objects.create(user=usuario)
+            return Response({'token': token.key, 'usuario': serializer.data},
+        status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def login(request):
+        usuario = get_object_or_404(Usuario, username=request.data.get('username'))
+        if not usuario.check_password(request.data.get('password')):
+            return Response({'detail': 'Credenciais inválidas.'},
+        status=status.HTTP_400_BAD_REQUEST)
+        token, _ = Token.objects.get_or_create(user=usuario)
+        return Response({'token': token.key,
+        'usuario': UsuarioSerializer(usuario).data})
+
+    def perfil(request):
+        return Response({
+            'username': request.user.username,
+            'tipo': request.user.tipo,
+            'mensagem': f'Olá, {request.user.username}! Você é {request.user.get_tipo_display()}.'
+        })
+    
+
+
 class ClienteViewSet(viewsets.ModelViewSet):
     """
     ViewSet para o modelo Cliente.
